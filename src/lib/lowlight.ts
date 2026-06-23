@@ -1,0 +1,53 @@
+// Ported from vincent0426/meditor (MIT) — lowlight instance with common languages.
+import bash from "highlight.js/lib/languages/bash";
+import c from "highlight.js/lib/languages/c";
+import cpp from "highlight.js/lib/languages/cpp";
+import csharp from "highlight.js/lib/languages/csharp";
+import css from "highlight.js/lib/languages/css";
+import diff from "highlight.js/lib/languages/diff";
+import go from "highlight.js/lib/languages/go";
+import java from "highlight.js/lib/languages/java";
+import javascript from "highlight.js/lib/languages/javascript";
+import json from "highlight.js/lib/languages/json";
+import kotlin from "highlight.js/lib/languages/kotlin";
+import markdown from "highlight.js/lib/languages/markdown";
+import php from "highlight.js/lib/languages/php";
+import plainText from "highlight.js/lib/languages/plaintext";
+import python from "highlight.js/lib/languages/python";
+import r from "highlight.js/lib/languages/r";
+import ruby from "highlight.js/lib/languages/ruby";
+import rust from "highlight.js/lib/languages/rust";
+import sql from "highlight.js/lib/languages/sql";
+import swift from "highlight.js/lib/languages/swift";
+import typescript from "highlight.js/lib/languages/typescript";
+import html from "highlight.js/lib/languages/xml";
+import yaml from "highlight.js/lib/languages/yaml";
+import { createLowlight } from "lowlight";
+
+const lowlight = createLowlight();
+
+lowlight.register("None", plainText);
+lowlight.register("bash", bash);
+lowlight.register("c", c);
+lowlight.register("cpp", cpp);
+lowlight.register("csharp", csharp);
+lowlight.register("css", css);
+lowlight.register("diff", diff);
+lowlight.register("go", go);
+lowlight.register("html", html);
+lowlight.register("java", java);
+lowlight.register("javascript", javascript);
+lowlight.register("json", json);
+lowlight.register("kotlin", kotlin);
+lowlight.register("markdown", markdown);
+lowlight.register("php", php);
+lowlight.register("python", python);
+lowlight.register("r", r);
+lowlight.register("ruby", ruby);
+lowlight.register("rust", rust);
+lowlight.register("sql", sql);
+lowlight.register("swift", swift);
+lowlight.register("typescript", typescript);
+lowlight.register("yaml", yaml);
+
+export default lowlight;

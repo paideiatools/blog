@@ -9,7 +9,27 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "next": "16.3.0-preview.0",
+    "@supabase/ssr": "^0.12.0",
+    "@supabase/supabase-js": "^2.108.1",
+    "@tiptap/extension-character-count": "^3.26.0",
+    "@tiptap/extension-code-block-lowlight": "^3.26.0",
+    "@tiptap/extension-image": "^3.26.0",
+    "@tiptap/extension-link": "^3.26.0",
+    "@tiptap/extension-placeholder": "^3.26.0",
+    "@tiptap/extension-table": "^3.26.0",
+    "@tiptap/extension-text-align": "^3.26.0",
+    "@tiptap/extension-typography": "^3.26.0",
+    "@tiptap/extension-youtube": "^3.26.0",
+    "@tiptap/pm": "^3.26.0",
+    "@tiptap/react": "^3.26.0",
+    "@tiptap/starter-kit": "^3.26.0",
+    "date-fns": "^4.4.0",
+    "highlight.js": "^11.11.1",
+    "lowlight": "^3.3.0",
+    "lucide-react": "^1.17.0",
+    "mammoth": "^1.12.0",
+    "marked": "^18.0.5",
+    "next": "^16.2.8",
     "react": "19.2.7",
     "react-dom": "19.2.7"
   },
@@ -19,7 +39,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.3.0-preview.0",
+    "eslint-config-next": "^16.2.8",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
