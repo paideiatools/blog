@@ -18,6 +18,28 @@ npm run dev      # → http://localhost:3000
 
 Stop the stack with `supabase stop` (data persists between restarts).
 
+> **SMTP note:** invite / password emails now send via Resend (see
+> `supabase/config.toml` → `[auth.email.smtp]`). The password is read from
+> `env(SMTP_PASSWORD)`, so `SMTP_PASSWORD` must be in your shell environment
+> when you run `supabase start` (it's in `.env.local`; `export` it or keep it in
+> a `.env` the CLI loads). Locally this sends real email through Resend — in
+> Resend test mode only verified addresses are delivered.
+
+## Production email (Resend)
+
+Invite emails (Adminship) and password resets need SMTP. Configure it on the
+**production** Supabase project (`puijdcwcfniebdiobxyg`), one of:
+
+- Dashboard → Authentication → Emails → SMTP Settings — enter:
+  host `smtp.resend.com`, port `465`, user `resend`, password = your Resend API
+  key, sender `hello@paideias.org` / `Paideias`. OR
+- `supabase link` + `supabase config push` (applies `config.toml`, with
+  `SMTP_PASSWORD` set in the environment).
+
+Then **verify the `paideias.org` domain in Resend** so `hello@paideias.org` is
+allowed to send. Also apply the new migrations (incl.
+`20260623000004_adminship.sql`) to production.
+
 ## Schema changes
 
 Add SQL files to `supabase/migrations/` — they apply to the local database on

@@ -13,6 +13,21 @@ export type Category = {
   description: string | null;
 };
 
+export type CoverLayer = {
+  id: string;
+  // sticker = decorative glyph in `text`; shape = geometric shape id in `text`
+  kind?: "text" | "sticker" | "shape";
+  text: string;
+  x: number; // center X, % of cover width
+  y: number; // center Y, % of cover height
+  size: number; // font size in cqi (relative to cover width)
+  width: number; // text box width, % of cover width
+  color: "fg" | "accent" | "light" | "dark";
+  font: "sans" | "serif";
+  weight: number; // 400 | 700
+  align: "left" | "center" | "right";
+};
+
 export type Post = {
   id: string;
   title: string;
@@ -23,6 +38,11 @@ export type Post = {
   content: unknown;
   content_html: string | null;
   cover_image_url: string | null;
+  cover_credit_name: string | null;
+  cover_credit_link: string | null;
+  cover_template: string | null;
+  cover_text: string | null;
+  cover_layers: CoverLayer[] | null;
   status: "draft" | "published" | "archived";
   featured: boolean;
   author_id: string;

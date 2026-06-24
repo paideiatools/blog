@@ -161,42 +161,45 @@ body {
 }
 
 /* Image with a photo credit — the <figure> carries the width + alignment, so
-   the caption tracks the image when it's resized or re-aligned. */
+   the caption tracks the image. The credit reveals as an overlay on hover. */
 .article-content figure.blog-figure {
+  position: relative;
   margin: 2.75rem auto;
   max-width: 100%;
 }
 
 .article-content figure.blog-figure img {
+  display: block;
   margin: 0;
   border-radius: 12px;
 }
 
 .article-content .image-credit {
-  margin-top: 0.65rem;
-  font-size: 0.74em;
-  font-style: italic;
+  position: absolute;
+  inset: auto 0 0 0;
+  margin: 0;
+  padding: 2.2em 0.9em 0.7em;
+  font-size: 0.62em;
   line-height: 1.4;
-  color: var(--color-faint);
-  text-align: center;
-}
-
-.article-content figure.blog-figure[data-align="left"] .image-credit {
-  text-align: left;
-}
-
-.article-content figure.blog-figure[data-align="right"] .image-credit {
   text-align: right;
+  color: rgba(255, 255, 255, 0.92);
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.6), transparent);
+  border-radius: 0 0 12px 12px;
+  opacity: 0;
+  transition: opacity 200ms ease;
+  pointer-events: none;
+}
+
+.article-content figure.blog-figure:hover .image-credit,
+.article-content figure.blog-figure:focus-within .image-credit {
+  opacity: 1;
 }
 
 .article-content .image-credit a {
-  color: inherit;
+  color: #fff;
   text-decoration: underline;
   text-underline-offset: 2px;
-}
-
-.article-content .image-credit a:hover {
-  color: var(--color-accent);
+  pointer-events: auto;
 }
 
 .article-content hr {
@@ -284,6 +287,212 @@ body {
 
 .article-content div[data-html-embed] iframe {
   max-width: 100%;
+}
+
+/* ---------- Typographic cover banners (title-as-image) ---------- */
+
+.tcover {
+  container-type: inline-size;
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: 16px;
+  isolation: isolate;
+  background: var(--tc-bg);
+  color: var(--tc-fg);
+}
+
+/* Fill a fixed-size box (e.g. a card thumbnail) instead of using 16:9. */
+.tcover--fill {
+  aspect-ratio: auto;
+  height: 100%;
+  border-radius: 0;
+}
+
+/* Themes (palette only) */
+.tcover--midnight {
+  --tc-bg: #16203a;
+  --tc-fg: #ffffff;
+  --tc-accent: #34d399;
+}
+.tcover--clay {
+  --tc-bg: linear-gradient(135deg, #de7f5f, #bd5d39);
+  --tc-fg: #2a1206;
+  --tc-accent: #2a1206;
+}
+.tcover--forest {
+  --tc-bg: #0f3d35;
+  --tc-fg: #ecfff7;
+  --tc-accent: #6ee7b7;
+}
+.tcover--cream {
+  --tc-bg: #f3eee2;
+  --tc-fg: #1b1a17;
+  --tc-accent: #d97757;
+}
+
+.tcover__sparkle {
+  position: absolute;
+  z-index: 1;
+  fill: var(--tc-accent);
+  opacity: 0.9;
+}
+
+/* Canva-style positioned text layers placed on top of a cover. */
+.tcover__layer {
+  position: absolute;
+  z-index: 3;
+  transform: translate(-50%, -50%);
+  margin: 0;
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+
+.tcover__blob {
+  position: absolute;
+  z-index: 0;
+  right: -14cqi;
+  bottom: -22cqi;
+  width: 60cqi;
+  height: 60cqi;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--tc-accent) 38%, transparent),
+    transparent 70%
+  );
+}
+
+.tcover__ring {
+  position: absolute;
+  z-index: 0;
+  left: -10cqi;
+  top: -14cqi;
+  width: 46cqi;
+  height: 46cqi;
+  border-radius: 50%;
+  border: 1.4cqi solid var(--tc-accent);
+  opacity: 0.22;
+}
+
+/* Style: generative pattern */
+.tcover--generative .tcover__label {
+  position: absolute;
+  z-index: 2;
+  left: 6cqi;
+  bottom: 6cqi;
+  font-family: var(--font-sans);
+  font-size: 3cqi;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 1.4cqi 3.2cqi;
+  border-radius: 20cqi;
+  background: color-mix(in srgb, var(--tc-fg) 14%, transparent);
+}
+
+/* Style: topic badge */
+.tcover--badge {
+  align-items: center;
+}
+.tcover--badge .tcover__body {
+  position: relative;
+  z-index: 2;
+  padding: 8cqi;
+}
+.tcover--badge .tcover__kicker {
+  display: block;
+  font-family: var(--font-sans);
+  font-size: 3cqi;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  opacity: 0.6;
+  margin-bottom: 2.5cqi;
+}
+.tcover--badge .tcover__big {
+  display: block;
+  font-family: var(--font-sans);
+  font-size: 12cqi;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+.tcover--badge .tcover__glyph {
+  position: absolute;
+  z-index: 0;
+  right: -4cqi;
+  bottom: -16cqi;
+  font-family: var(--font-serif);
+  font-size: 70cqi;
+  line-height: 1;
+  color: var(--tc-accent);
+  opacity: 0.16;
+}
+
+/* Style: monogram */
+.tcover--monogram {
+  justify-content: center;
+}
+.tcover--monogram .tcover__initial {
+  font-family: var(--font-serif);
+  font-size: 52cqi;
+  font-weight: 500;
+  line-height: 1;
+  z-index: 2;
+}
+.tcover--monogram .tcover__monolabel {
+  position: absolute;
+  z-index: 2;
+  bottom: 7cqi;
+  font-family: var(--font-sans);
+  font-size: 3cqi;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+
+/* Style: pull-quote */
+.tcover--quote .tcover__body {
+  position: relative;
+  z-index: 2;
+  padding: 8cqi;
+  max-width: 84%;
+}
+.tcover--quote .tcover__quote {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 7.5cqi;
+  line-height: 1.28;
+  letter-spacing: -0.01em;
+}
+.tcover--quote .tcover__qlabel {
+  display: block;
+  margin-top: 4cqi;
+  font-family: var(--font-sans);
+  font-size: 2.6cqi;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  opacity: 0.55;
+}
+.tcover--quote .tcover__qmark {
+  position: absolute;
+  z-index: 1;
+  left: 4cqi;
+  top: -2cqi;
+  font-family: var(--font-serif);
+  font-size: 26cqi;
+  line-height: 1;
+  color: var(--tc-accent);
+  opacity: 0.22;
 }
 
 /* ---------- Animated text effects (set in the editor, play on the blog) ---------- */

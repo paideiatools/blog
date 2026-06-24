@@ -128,6 +128,21 @@ round-trip back into the admin editor:
 
 ## Notes
 
+- Cover: pass a photo via `cover_image_url` (plus optional `cover_credit_name`
+  and `cover_credit_link`), OR a designed banner via `cover_template` of the form
+  `<style>:<theme>` — styles `generative | badge | monogram | quote`, themes
+  `midnight | clay | forest | cream` (e.g. `"generative:forest"`). A template and
+  a photo are mutually exclusive. Designed covers complement the title (pattern,
+  category, initial, or a pulled quote) rather than repeating it. Optionally add
+  positioned layers with `cover_layers`: an array of
+  `{ kind, text, x, y, size, width, color, font, weight, align }`. `kind` is
+  `text` (editable text), `sticker` (a decorative glyph/emoji in `text`, e.g.
+  "✦"), or `shape` (a geometric shape id in `text`: `circle|ring|square|rounded|
+  triangle|diamond|bar`). `x`/`y` are center %, `size`/`width` are % of the cover
+  width, `color` is `fg|accent|light|dark`, `font` is `sans|serif`. Mix text +
+  stickers + shapes to design a cool, custom cover card for the post. Optionally set
+  `cover_text` to put custom words on the card (independent of title/subtitle);
+  if omitted it falls back to the subtitle/category.
 - Content may be `body_markdown` (converted server-side) or `body_html`. Both are
   sanitized: `<script>`, `<object>`, `<embed>`, inline event handlers, and
   `javascript:` URLs are stripped. `<iframe>` survives **only** for allow-listed

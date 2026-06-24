@@ -11,12 +11,14 @@ import {
   LogOut,
   Search,
   ChevronDown,
+  KeyRound,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { initials } from "@/lib/utils";
 import type { Category } from "@/lib/types";
 import ThemeToggle from "./ThemeToggle";
 import SearchOverlay from "./SearchOverlay";
+import ChangePasswordModal from "@/components/ChangePasswordModal";
 
 export default function Header() {
   const pathname = usePathname();
@@ -25,6 +27,7 @@ export default function Header() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [menuOpen, setMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [pwOpen, setPwOpen] = useState(false);
   const [articlesOpen, setArticlesOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -202,6 +205,15 @@ export default function Header() {
                     </Link>
                   )}
                   <button
+                    onClick={() => {
+                      setPwOpen(true);
+                      setUserMenuOpen(false);
+                    }}
+                    className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-muted transition-colors hover:bg-paper/60 hover:text-ink"
+                  >
+                    <KeyRound size={15} /> Change password
+                  </button>
+                  <button
                     onClick={signOut}
                     className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-muted transition-colors hover:bg-paper/60"
                   >
@@ -294,6 +306,7 @@ export default function Header() {
       )}
 
       <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />
+      <ChangePasswordModal open={pwOpen} onClose={() => setPwOpen(false)} />
     </header>
   );
 }

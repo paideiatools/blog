@@ -25,6 +25,7 @@ import {
   X,
   UploadCloud,
   Images,
+  Sparkles,
   Loader2,
   CheckCircle2,
 } from "lucide-react";
@@ -43,6 +44,8 @@ import TableControls from "@/components/admin/editor/TableControls";
 import UnsplashPicker, {
   type UnsplashImage,
 } from "@/components/admin/editor/UnsplashPicker";
+import CoverDesigner from "@/components/admin/editor/CoverDesigner";
+import type { CoverLayer } from "@/lib/types";
 import {
   AnimatedText,
   BlogImage,
@@ -93,6 +96,17 @@ export default function PostEditor({ post }: { post?: Post }) {
   const [excerpt, setExcerpt] = useState(post?.excerpt ?? "");
   const [coverUrl, setCoverUrl] = useState(post?.cover_image_url ?? "");
   const [categoryId, setCategoryId] = useState(post?.category_id ?? "");
+  const [coverTemplate, setCoverTemplate] = useState(post?.cover_template ?? "");
+  const [coverCreditName, setCoverCreditName] = useState(
+    post?.cover_credit_name ?? ""
+  );
+  const [coverCreditLink, setCoverCreditLink] = useState(
+    post?.cover_credit_link ?? ""
+  );
+  const [coverText, setCoverText] = useState(post?.cover_text ?? "");
+  const [coverLayers, setCoverLayers] = useState<CoverLayer[]>(
+    post?.cover_layers ?? []
+  );
   const [tagsInput, setTagsInput] = useState(post?.tags?.join(", ") ?? "");
   const [metaTitle, setMetaTitle] = useState(post?.meta_title ?? "");
   const [metaDescription, setMetaDescription] = useState(
@@ -225,7 +239,22 @@ export default function PostEditor({ post }: { post?: Post }) {
     setUploading(true);
     const url = await uploadImage(file);
     setUploading(false);
-    if (url) setCoverUrl(url);
+    if (url) {
+      setCoverUrl(url);
+      setCoverTemplate("");
+      setCoverText("");
+      setCoverCreditName("");
+      setCoverCreditLink("");
+    }
+  }
+
+  function clearCover() {
+    setCoverUrl("");
+    setCoverTemplate("");
+    setCoverText("");
+    setCoverCreditName("");
+    setCoverCreditLink("");
+    setCoverLayers([]);
   }
 
   async function onInlineImageSelected(file: File) {
@@ -261,6 +290,9 @@ export default function PostEditor({ post }: { post?: Post }) {
 
     if (unsplashMode === "cover") {
       setCoverUrl(img.regular);
+      setCoverTemplate("");
+      setCoverCreditName(img.authorName);
+      setCoverCreditLink(img.authorLink);
     } else if (editor) {
       // The credit rides along as node attributes, so it tracks the image's
       // size and alignment when those are changed later.
@@ -336,7 +368,12 @@ export default function PostEditor({ post }: { post?: Post }) {
       excerpt: excerpt.trim() || excerptFromHtml(html),
       content: editor.getJSON(),
       content_html: html,
-      cover_image_url: coverUrl || null,
+      cover_image_url: coverTemplate ? null : coverUrl || null,
+      cover_template: coverTemplate || null,
+      cover_text: coverTemplate ? coverText.trim() || null : null,
+      cover_layers: coverTemplate && coverLayers.length ? coverLayers : null,
+      cover_credit_name: coverTemplate ? null : coverCreditName.trim() || null,
+      cover_credit_link: coverTemplate ? null : coverCreditLink.trim() || null,
       category_id: categoryId || null,
       tags: tagsInput
         .split(",")
@@ -488,7 +525,21 @@ export default function PostEditor({ post }: { post?: Post }) {
       {/* Writing canvas */}
       <div className="mx-auto max-w-2xl px-5 pb-32 pt-10">
         {/* Cover image */}
-        {coverUrl ? (
+        {coverTemplate ? (
+          <div className="mb-8">
+            <CoverDesigner
+              template={coverTemplate}
+              onTemplateChange={setCoverTemplate}
+              title={docTitle}
+              label={categories.find((c) => c.id === categoryId)?.name ?? null}
+              quote={subtitle || null}
+              text={coverText || null}
+              layers={coverLayers}
+              onChange={setCoverLayers}
+              onRemove={clearCover}
+            />
+          </div>
+        ) : coverUrl ? (
           <div className="group relative mb-8 overflow-hidden rounded-2xl">
             <Image
               src={coverUrl}
@@ -498,7 +549,7 @@ export default function PostEditor({ post }: { post?: Post }) {
               className="w-full object-cover"
             />
             <button
-              onClick={() => setCoverUrl("")}
+              onClick={clearCover}
               className="absolute right-3 top-3 rounded-full bg-ink/70 p-2 text-white opacity-0 transition-opacity group-hover:opacity-100"
               title="Remove cover"
             >
@@ -506,18 +557,25 @@ export default function PostEditor({ post }: { post?: Post }) {
             </button>
           </div>
         ) : (
-          <div className="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="mb-8 flex items-center gap-1 rounded-2xl border border-dashed border-line p-1.5">
+            <span className="px-2.5 text-sm text-faint">Cover</span>
             <button
-              onClick={() => coverInputRef.current?.click()}
-              className="flex items-center justify-center gap-2 rounded-2xl border border-dashed border-line py-6 text-sm font-medium text-faint transition-colors hover:border-accent hover:text-accent"
+              onClick={() => setCoverTemplate("generative:midnight")}
+              className="flex flex-1 items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-medium text-muted transition-colors hover:bg-paper hover:text-accent"
             >
-              <UploadCloud size={17} /> Upload a cover
+              <Sparkles size={16} /> Design
             </button>
             <button
               onClick={() => setUnsplashMode("cover")}
-              className="flex items-center justify-center gap-2 rounded-2xl border border-dashed border-line py-6 text-sm font-medium text-faint transition-colors hover:border-accent hover:text-accent"
+              className="flex flex-1 items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-medium text-muted transition-colors hover:bg-paper hover:text-accent"
             >
-              <Images size={17} /> Search Unsplash
+              <Images size={16} /> Unsplash
+            </button>
+            <button
+              onClick={() => coverInputRef.current?.click()}
+              className="flex flex-1 items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-medium text-muted transition-colors hover:bg-paper hover:text-accent"
+            >
+              <UploadCloud size={16} /> Upload
             </button>
           </div>
         )}

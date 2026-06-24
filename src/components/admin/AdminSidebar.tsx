@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -11,9 +12,13 @@ import {
   LogOut,
   PenLine,
   Bot,
+  ShieldCheck,
+  KeyRound,
+  ChevronDown,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { initials } from "@/lib/utils";
+import ChangePasswordModal from "@/components/ChangePasswordModal";
 
 const NAV = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
@@ -24,6 +29,8 @@ const NAV = [
 
 export default function AdminSidebar({ adminName }: { adminName: string }) {
   const pathname = usePathname();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [pwOpen, setPwOpen] = useState(false);
 
   async function signOut() {
     const supabase = createClient();
@@ -96,22 +103,66 @@ export default function AdminSidebar({ adminName }: { adminName: string }) {
           <Bot size={16} className="shrink-0" />
           <span className="hidden md:inline">AI agent posting</span>
         </Link>
-        <button
-          onClick={signOut}
-          className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-white/60 transition-colors hover:bg-white/5 hover:text-white"
+        <Link
+          href="/admin/adminship"
+          className={`flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors ${
+            pathname.startsWith("/admin/adminship")
+              ? "bg-white/10 text-white"
+              : "text-white/60 hover:bg-white/5 hover:text-white"
+          }`}
         >
-          <LogOut size={16} className="shrink-0" />
-          <span className="hidden md:inline">Sign out</span>
-        </button>
-        <div className="flex items-center gap-2 px-3 pt-3">
-          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent-soft text-[11px] font-semibold text-accent-dark">
-            {initials(adminName)}
-          </span>
-          <span className="hidden truncate text-xs text-white/50 md:inline">
-            {adminName}
-          </span>
+          <ShieldCheck size={16} className="shrink-0" />
+          <span className="hidden md:inline">Adminship</span>
+        </Link>
+
+        {/* Profile menu */}
+        <div className="relative pt-2">
+          {menuOpen && (
+            <>
+              <div
+                className="fixed inset-0 z-10"
+                onClick={() => setMenuOpen(false)}
+              />
+              <div className="absolute bottom-full left-0 z-20 mb-2 w-52 rounded-xl border border-white/10 bg-ink p-1.5 shadow-2xl">
+                <button
+                  onClick={() => {
+                    setPwOpen(true);
+                    setMenuOpen(false);
+                  }}
+                  className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+                >
+                  <KeyRound size={15} /> Change password
+                </button>
+                <button
+                  onClick={signOut}
+                  className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+                >
+                  <LogOut size={15} /> Sign out
+                </button>
+              </div>
+            </>
+          )}
+          <button
+            onClick={() => setMenuOpen((o) => !o)}
+            className="flex w-full items-center gap-2 rounded-xl px-2 py-2 transition-colors hover:bg-white/5"
+          >
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent-soft text-[11px] font-semibold text-accent-dark">
+              {initials(adminName)}
+            </span>
+            <span className="hidden flex-1 truncate text-left text-xs text-white/60 md:inline">
+              {adminName}
+            </span>
+            <ChevronDown
+              size={14}
+              className={`hidden shrink-0 text-white/40 transition-transform md:block ${
+                menuOpen ? "rotate-180" : ""
+              }`}
+            />
+          </button>
         </div>
       </div>
+
+      <ChangePasswordModal open={pwOpen} onClose={() => setPwOpen(false)} />
     </aside>
   );
 }

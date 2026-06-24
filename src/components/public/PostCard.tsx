@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import type { Post } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
+import TypographicCover from "@/components/public/TypographicCover";
 
 export default function PostCard({
   post,
@@ -24,7 +25,17 @@ export default function PostCard({
         tabIndex={-1}
         aria-hidden
       >
-        {post.cover_image_url ? (
+        {post.cover_template ? (
+          <TypographicCover
+            template={post.cover_template}
+            title={post.title}
+            label={post.category?.name ?? null}
+            quote={post.excerpt ?? null}
+            text={post.cover_text}
+            layers={post.cover_layers}
+            className="tcover--fill"
+          />
+        ) : post.cover_image_url ? (
           <Image
             src={post.cover_image_url}
             alt=""

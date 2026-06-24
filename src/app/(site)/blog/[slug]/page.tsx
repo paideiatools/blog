@@ -9,6 +9,7 @@ import ReadingProgress from "@/components/public/ReadingProgress";
 import LikeButton from "@/components/public/LikeButton";
 import CommentSection from "@/components/public/CommentSection";
 import PostCard from "@/components/public/PostCard";
+import TypographicCover from "@/components/public/TypographicCover";
 import { formatDate, siteUrl } from "@/lib/utils";
 import type { Post } from "@/lib/types";
 
@@ -158,8 +159,20 @@ export default async function PostPage({
         </div>
       </header>
 
-      {post.cover_image_url && (
+      {post.cover_template ? (
         <figure className="mx-auto mt-10 max-w-2xl">
+          <TypographicCover
+            template={post.cover_template}
+            title={post.title}
+            label={post.kicker ?? post.category?.name ?? null}
+            quote={post.subtitle ?? post.excerpt ?? null}
+            text={post.cover_text}
+            layers={post.cover_layers}
+            className="ring-1 ring-line"
+          />
+        </figure>
+      ) : post.cover_image_url ? (
+        <figure className="group relative mx-auto mt-10 max-w-2xl">
           <Image
             src={post.cover_image_url}
             alt={post.title}
@@ -168,8 +181,26 @@ export default async function PostPage({
             priority
             className="aspect-[16/9] w-full rounded-2xl object-cover ring-1 ring-line"
           />
+          {post.cover_credit_name && (
+            <figcaption className="pointer-events-none absolute inset-x-0 bottom-0 rounded-b-2xl bg-gradient-to-t from-black/60 to-transparent px-4 pb-2.5 pt-10 text-right text-xs text-white/90 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+              Photo by{" "}
+              {post.cover_credit_link ? (
+                <a
+                  href={`${post.cover_credit_link}?utm_source=paideias_blog&utm_medium=referral`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="pointer-events-auto underline"
+                >
+                  {post.cover_credit_name}
+                </a>
+              ) : (
+                post.cover_credit_name
+              )}{" "}
+              on Unsplash
+            </figcaption>
+          )}
         </figure>
-      )}
+      ) : null}
 
       <div
         className="article-content mx-auto mt-12 max-w-2xl md:mt-16"

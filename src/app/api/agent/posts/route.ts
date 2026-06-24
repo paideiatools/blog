@@ -2,6 +2,52 @@ import type { NextRequest } from "next/server";
 import { marked } from "marked";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { excerptFromHtml, readingTimeFromHtml, slugify } from "@/lib/utils";
+import type { CoverLayer } from "@/lib/types";
+
+function sanitizeLayers(input: unknown): CoverLayer[] | null {
+  if (!Array.isArray(input)) return null;
+  const colors = ["fg", "accent", "light", "dark"];
+  const aligns = ["left", "center", "right"];
+  const fonts = ["sans", "serif"];
+  const num = (v: unknown, d: number, lo: number, hi: number) => {
+    const n = Number(v);
+    return Number.isFinite(n) ? Math.min(hi, Math.max(lo, n)) : d;
+  };
+  const out = input
+    .slice(0, 12)
+    .map((raw) => {
+      const l = (raw ?? {}) as Record<string, unknown>;
+      return {
+        id:
+          typeof l.id === "string"
+            ? l.id.slice(0, 12)
+            : Math.random().toString(36).slice(2, 9),
+        kind:
+          l.kind === "sticker"
+            ? "sticker"
+            : l.kind === "shape"
+              ? "shape"
+              : "text",
+        text: String(l.text ?? "").slice(0, 200),
+        x: num(l.x, 50, 0, 100),
+        y: num(l.y, 50, 0, 100),
+        size: num(l.size, 8, 3, 30),
+        width: num(l.width, 72, 5, 100),
+        color: colors.includes(l.color as string)
+          ? (l.color as CoverLayer["color"])
+          : "fg",
+        font: fonts.includes(l.font as string)
+          ? (l.font as CoverLayer["font"])
+          : "sans",
+        weight: Number(l.weight) >= 700 ? 700 : 400,
+        align: aligns.includes(l.align as string)
+          ? (l.align as CoverLayer["align"])
+          : "center",
+      } as CoverLayer;
+    })
+    .filter((l) => l.text);
+  return out.length ? out : null;
+}
 
 // Programmatic posting API for AI agents (Claude tool-use, automations, cron,
 // etc.). Authenticated with a single bearer token (BLOG_AGENT_API_KEY) and
@@ -93,8 +139,26 @@ interface CreatePostBody {
   category?: string;
   tags?: string[];
   cover_image_url?: string;
+  cover_template?: string;
+  cover_text?: string;
+  cover_layers?: unknown;
+  cover_credit_name?: string;
+  cover_credit_link?: string;
   featured?: boolean;
   status?: "draft" | "published";
+}
+
+const COVER_STYLES = ["generative", "badge", "monogram", "quote"];
+const COVER_THEMES = ["midnight", "clay", "forest", "cream"];
+
+// Accepts "<style>:<theme>" (e.g. "generative:forest"); a bare style defaults
+// to the midnight theme. Returns null for anything invalid.
+function normalizeCoverTemplate(value: string | undefined): string | null {
+  const t = value?.trim();
+  if (!t) return null;
+  const [style, theme] = t.split(":");
+  if (!COVER_STYLES.includes(style)) return null;
+  return `${style}:${COVER_THEMES.includes(theme) ? theme : "midnight"}`;
 }
 
 export async function POST(request: NextRequest) {
@@ -173,6 +237,7 @@ export async function POST(request: NextRequest) {
   const tags = Array.isArray(body.tags)
     ? body.tags.map((t) => String(t).trim().replace(/^#/, "")).filter(Boolean)
     : [];
+  const coverTemplate = normalizeCoverTemplate(body.cover_template);
 
   const { data: created, error } = await supabase
     .from("posts")
@@ -183,7 +248,16 @@ export async function POST(request: NextRequest) {
       slug,
       excerpt: body.excerpt?.trim() || excerptFromHtml(html),
       content_html: html,
-      cover_image_url: body.cover_image_url?.trim() || null,
+      cover_image_url: coverTemplate ? null : body.cover_image_url?.trim() || null,
+      cover_template: coverTemplate,
+      cover_text: coverTemplate ? body.cover_text?.trim() || null : null,
+      cover_layers: coverTemplate ? sanitizeLayers(body.cover_layers) : null,
+      cover_credit_name: coverTemplate
+        ? null
+        : body.cover_credit_name?.trim() || null,
+      cover_credit_link: coverTemplate
+        ? null
+        : body.cover_credit_link?.trim() || null,
       category_id: categoryId,
       tags,
       reading_time: readingTimeFromHtml(html),
