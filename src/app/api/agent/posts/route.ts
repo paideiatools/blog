@@ -2,6 +2,7 @@ import type { NextRequest } from "next/server";
 import { marked } from "marked";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { excerptFromHtml, readingTimeFromHtml, slugify } from "@/lib/utils";
+import { searchUnsplash } from "@/lib/unsplash";
 import type { CoverLayer } from "@/lib/types";
 
 function sanitizeLayers(input: unknown): CoverLayer[] | null {
@@ -102,8 +103,32 @@ function sanitizeHtml(html: string): string {
     .replace(/javascript:/gi, "");
 }
 
+// GET ?image_search=<query> reuses the same bearer token to search Unsplash,
+// so an agent can pick a real, credited photo instead of guessing a URL.
+async function handleImageSearch(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const query = searchParams.get("image_search")?.trim() ?? "";
+  const page = Number(searchParams.get("page") ?? "1") || 1;
+  const data = await searchUnsplash(query, page, 12);
+  if (!data) {
+    return Response.json(
+      { error: "image_search_unavailable", message: "Set UNSPLASH_ACCESS_KEY and pass a non-empty 'image_search' query." },
+      { status: 503 }
+    );
+  }
+  return Response.json({
+    results: data.results,
+    usage:
+      "Pick a result and pass its `regular` URL as cover_image_url, plus cover_credit_name (authorName) and cover_credit_link (authorLink) on POST — Unsplash requires attribution.",
+  });
+}
+
 export async function GET(request: NextRequest) {
   if (!authorized(request)) return unauthorized();
+
+  if (new URL(request.url).searchParams.has("image_search")) {
+    return handleImageSearch(request);
+  }
 
   const supabase = createAdminClient();
   const [{ data: categories }, { data: posts }] = await Promise.all([
@@ -125,7 +150,36 @@ export async function GET(request: NextRequest) {
     categories: categories ?? [],
     recent_posts: posts ?? [],
     instructions:
-      "Write an original post that doesn't duplicate a recent title. Then POST to this same URL with the Bearer token and a JSON body: { title (required), body_markdown (required), kicker?, subtitle?, excerpt?, category? (a slug from `categories`), tags?: string[], cover_image_url?, status?: 'draft'|'published' }. Posts default to 'draft' so a human can review before publishing.",
+      "Write an original post that doesn't duplicate a recent title. Then POST to this same URL with the Bearer token and a JSON body: { title (required), body_markdown (required), kicker?, subtitle?, excerpt?, category? (a slug from `categories`), tags?: string[], status?: 'draft'|'published', ...cover fields, see `capabilities.cover` }. Posts default to 'draft' so a human can review before publishing. Use `capabilities` below to make full use of the blog's design system — don't just write plain text when a cover, an image, a highlighted phrase, or a table would make the post better.",
+    capabilities: {
+      cover: {
+        summary:
+          "Every post needs ONE cover, chosen one of two ways — pick whichever fits the topic:",
+        designed: {
+          how: "Set cover_template to '<style>:<theme>' (e.g. 'generative:forest'). styles: generative|badge|monogram|quote. themes: midnight|clay|forest|cream.",
+          layers:
+            "Optionally add cover_layers: an array of { kind, text, x, y, size, width, color, font, weight, align }. kind is 'text' (editable words), 'sticker' (an emoji/glyph in `text`, e.g. '✦'), or 'shape' (one of circle|ring|square|rounded|triangle|diamond|bar, in `text`). x/y are center % (0-100), size/width are % of cover width, color is fg|accent|light|dark, font is sans|serif. Mix 2-4 layers for a custom designed card — a short overline word, a sticker, an accent shape.",
+          cover_text:
+            "Optional cover_text sets the card's main words independent of the title/subtitle.",
+        },
+        photo: {
+          how: "Real photo instead of a designed card: GET this same URL with ?image_search=<query> (same bearer token) to search Unsplash. Pick a result, then on POST send cover_image_url = result.regular, cover_credit_name = result.authorName, cover_credit_link = result.authorLink.",
+        },
+        rule: "cover_template and cover_image_url are mutually exclusive — pick one per post.",
+      },
+      rich_body_html: {
+        summary:
+          "For more than plain markdown, send body_html instead of body_markdown — all of this round-trips into the editor:",
+        animated_text:
+          "Wrap a key phrase to draw the eye: <span data-animate=\"highlight\" class=\"animate-text-highlight\">phrase</span> (also 'shimmer', 'glow'). Use sparingly — one or two phrases per post, on the sentence that matters most.",
+        credited_image:
+          "Inline photo with a hover credit: <figure data-blog-image data-align=\"center\" class=\"blog-figure\" data-credit-name=\"Jane Doe\" data-credit-link=\"https://unsplash.com/@jane\" style=\"display:block;margin:0 auto;width:100%\"><img src=\"...\" alt=\"...\" style=\"display:block;width:100%;height:auto;margin:0\"><figcaption class=\"image-credit\">Photo by <a href=\"...\">Jane Doe</a> on <a href=\"https://unsplash.com/\">Unsplash</a></figcaption></figure>. Get a real photo + credit via ?image_search above.",
+        tables: "<table><tbody><tr><th><p>...</p></th>...</tr>...</tbody></table> (use <th> for the header row) — good for comparisons.",
+        video: "<div class=\"video-embed\"><iframe src=\"https://www.youtube.com/embed/VIDEO_ID\" allowfullscreen></iframe></div> — only youtube.com, youtube-nocookie.com, player.vimeo.com survive sanitization.",
+      },
+      guidance:
+        "Use these deliberately, not on every post: a designed cover or a real photo always (pick the one that fits the topic), one highlighted phrase on posts with a single strong takeaway, a table when comparing 2+ things, a video only if directly relevant. Don't decorate for its own sake — match the brand voice (thoughtful, concrete, never hype).",
+    },
   });
 }
 

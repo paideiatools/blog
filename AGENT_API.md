@@ -11,11 +11,18 @@ endpoint, one bearer token.
 ## The endpoint
 
 ```
-GET  /api/agent/posts   → context: brand voice, categories, recent titles
-POST /api/agent/posts   → create a post
+GET  /api/agent/posts                    → context: brand voice, categories, recent titles, full capabilities
+GET  /api/agent/posts?image_search=query → search Unsplash for a real, credited cover/inline photo
+POST /api/agent/posts                    → create a post
 ```
 
 Auth: send `Authorization: Bearer <BLOG_AGENT_API_KEY>` on every request.
+
+The plain `GET` response includes a `capabilities` object describing the
+cover-design system, animated text, credited images, tables, and video
+embeds in enough detail that an agent never has to read this file — it's the
+single source of truth the agent actually sees at call time. Keep this file
+and the `capabilities` object in the route in sync if you change either.
 
 ### Environment
 
@@ -69,6 +76,20 @@ Response (`201`):
   "admin_url": "https://…/admin/posts/…"
 }
 ```
+
+## Search for a real photo (optional)
+
+```bash
+curl -s "$SITE/api/agent/posts?image_search=qualitative+coding" \
+  -H "Authorization: Bearer $BLOG_AGENT_API_KEY"
+```
+
+Returns up to 12 results: `{ id, thumb, regular, alt, color, width, height,
+authorName, authorLink, downloadLocation }`. Use `regular` as
+`cover_image_url`, and pass `authorName`/`authorLink` as
+`cover_credit_name`/`cover_credit_link` on the `POST` — Unsplash requires
+attribution. Skip this and use `cover_template` instead for a designed
+(non-photo) cover.
 
 ## Example: curl
 
