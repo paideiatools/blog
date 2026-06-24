@@ -6,11 +6,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = siteUrl();
   const supabase = await createClient();
 
-  const { data: posts } = await supabase
-    .from("posts")
-    .select("slug, updated_at")
-    .eq("status", "published")
-    .order("published_at", { ascending: false });
+  const [{ data: posts }, { data: docs }] = await Promise.all([
+    supabase
+      .from("posts")
+      .select("slug, updated_at")
+      .eq("status", "published")
+      .eq("section", "blog")
+      .order("published_at", { ascending: false }),
+    supabase
+      .from("posts")
+      .select("slug, updated_at")
+      .eq("status", "published")
+      .eq("section", "docs")
+      .order("published_at", { ascending: false }),
+  ]);
 
   const postEntries: MetadataRoute.Sitemap = (posts ?? []).map((post) => ({
     url: `${base}/blog/${post.slug}`,
@@ -19,10 +28,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
+  const docEntries: MetadataRoute.Sitemap = (docs ?? []).map((doc) => ({
+    url: `${base}/about/${doc.slug}`,
+    lastModified: new Date(doc.updated_at),
+    changeFrequency: "monthly",
+    priority: 0.5,
+  }));
+
   return [
     { url: base, changeFrequency: "daily", priority: 1 },
     { url: `${base}/blog`, changeFrequency: "daily", priority: 0.9 },
     { url: `${base}/about`, changeFrequency: "monthly", priority: 0.6 },
     ...postEntries,
+    ...docEntries,
   ];
 }

@@ -94,6 +94,7 @@ create table public.posts (
   cover_text text,
   cover_layers jsonb,
   status text not null default 'draft' check (status in ('draft', 'published', 'archived')),
+  section text not null default 'blog' check (section in ('blog', 'docs')),
   featured boolean not null default false,
   author_id uuid not null references public.profiles(id) on delete cascade,
   category_id uuid references public.categories(id) on delete set null,
@@ -108,6 +109,7 @@ create table public.posts (
 );
 create index posts_status_published_at_idx on public.posts (status, published_at desc);
 create index posts_category_idx on public.posts (category_id);
+create index posts_section_status_published_idx on public.posts (section, status, published_at desc);
 alter table public.posts enable row level security;
 create policy "Published posts are viewable by everyone"
   on public.posts for select using (status = 'published' or public.is_admin());

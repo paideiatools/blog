@@ -1,5 +1,10 @@
 import type { Metadata } from "next";
-import { ArrowRight, BookOpen, MessagesSquare, Quote } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, BookOpen, FileText, MessagesSquare, Quote } from "lucide-react";
+import { createClient } from "@/lib/supabase/server";
+import type { Post } from "@/lib/types";
+
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: "About Paideias",
@@ -26,7 +31,15 @@ const PILLARS = [
   },
 ];
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const supabase = await createClient();
+  const { data: docs } = await supabase
+    .from("posts")
+    .select("title, slug, excerpt, kicker")
+    .eq("status", "published")
+    .eq("section", "docs")
+    .order("created_at", { ascending: true });
+
   return (
     <div className="mx-auto max-w-6xl px-5 py-16">
       <header className="mx-auto max-w-2xl text-center">
@@ -52,6 +65,45 @@ export default function AboutPage() {
           </div>
         ))}
       </div>
+
+      {docs && docs.length > 0 && (
+        <section className="mt-20">
+          <h2 className="section-label mb-5 text-xs font-bold uppercase tracking-[0.2em] text-faint">
+            Guides &amp; docs
+          </h2>
+          <div className="grid gap-4 md:grid-cols-2">
+            {(docs as Pick<Post, "title" | "slug" | "excerpt" | "kicker">[]).map(
+              (doc) => (
+                <Link
+                  key={doc.slug}
+                  href={`/about/${doc.slug}`}
+                  className="ring-card ring-card-hover group flex items-start gap-4 p-6"
+                >
+                  <FileText
+                    size={18}
+                    className="mt-0.5 shrink-0 text-accent"
+                  />
+                  <span>
+                    {doc.kicker && (
+                      <span className="block text-xs font-bold uppercase tracking-[0.2em] text-accent">
+                        {doc.kicker}
+                      </span>
+                    )}
+                    <span className="mt-1 block font-serif text-lg font-medium leading-snug transition-colors duration-200 group-hover:text-accent">
+                      {doc.title}
+                    </span>
+                    {doc.excerpt && (
+                      <span className="mt-1.5 block line-clamp-2 text-sm text-muted">
+                        {doc.excerpt}
+                      </span>
+                    )}
+                  </span>
+                </Link>
+              )
+            )}
+          </div>
+        </section>
+      )}
 
       <section className="ring-card mt-20 px-8 py-14 md:px-16">
         <div className="md:flex md:items-center md:justify-between md:gap-10">

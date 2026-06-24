@@ -13,7 +13,7 @@ export default function PostCard({
 }) {
   return (
     <article
-      className={`ring-card ring-card-hover group overflow-hidden ${
+      className={`ring-card ring-card-hover group flex h-full flex-col overflow-hidden ${
         large ? "md:grid md:grid-cols-2" : ""
       }`}
     >
@@ -50,7 +50,11 @@ export default function PostCard({
         )}
       </Link>
 
-      <div className={`p-6 ${large ? "flex flex-col justify-center md:p-10" : ""}`}>
+      <div
+        className={`flex flex-1 flex-col p-6 ${
+          large ? "md:justify-center md:p-10" : ""
+        }`}
+      >
         <div className="flex items-center gap-3 text-xs font-medium text-muted">
           {post.category && (
             <Link
@@ -70,7 +74,9 @@ export default function PostCard({
         <Link href={`/blog/${post.slug}`} className="block">
           <h3
             className={`mt-3 font-serif font-medium leading-snug tracking-tight transition-colors duration-200 group-hover:text-accent ${
-              large ? "text-2xl md:text-[32px]" : "text-xl"
+              large
+                ? "line-clamp-3 text-2xl md:text-[32px]"
+                : "line-clamp-2 min-h-[2.75em] text-xl"
             }`}
           >
             {post.title}
@@ -80,14 +86,16 @@ export default function PostCard({
         {post.excerpt && (
           <p
             className={`mt-3 leading-relaxed text-muted ${
-              large ? "line-clamp-3 text-base" : "line-clamp-2 text-sm"
+              large
+                ? "line-clamp-3 text-base"
+                : "line-clamp-2 min-h-[2.85em] text-sm"
             }`}
           >
             {post.excerpt}
           </p>
         )}
 
-        <p className="mt-5 text-xs text-muted">
+        <p className="mt-auto pt-5 text-xs text-muted">
           {post.reading_time} min read
         </p>
       </div>

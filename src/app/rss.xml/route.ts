@@ -18,6 +18,7 @@ export async function GET() {
     .from("posts")
     .select("title, slug, excerpt, published_at")
     .eq("status", "published")
+    .eq("section", "blog")
     .order("published_at", { ascending: false })
     .limit(30);
 

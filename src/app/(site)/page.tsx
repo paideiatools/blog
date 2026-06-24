@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import PostCard from "@/components/public/PostCard";
+import FeaturedCarousel from "@/components/public/FeaturedCarousel";
 import NewsletterForm from "@/components/public/NewsletterForm";
 import type { Category, Post } from "@/lib/types";
 
@@ -16,21 +17,24 @@ export default async function HomePage() {
         .from("posts")
         .select("*, author:profiles!posts_author_id_fkey(*), category:categories(*)")
         .eq("status", "published")
+        .eq("section", "blog")
         .eq("featured", true)
         .order("published_at", { ascending: false })
-        .limit(1),
+        .limit(5),
       supabase
         .from("posts")
         .select("*, author:profiles!posts_author_id_fkey(*), category:categories(*)")
         .eq("status", "published")
+        .eq("section", "blog")
         .order("published_at", { ascending: false })
-        .limit(7),
+        .limit(9),
       supabase.from("categories").select("*").order("name"),
     ]);
 
-  const featuredPost = (featured?.[0] as Post | undefined) ?? null;
+  const featuredPosts = (featured as Post[]) ?? [];
+  const featuredIds = new Set(featuredPosts.map((p) => p.id));
   const latestPosts = ((latest as Post[]) ?? []).filter(
-    (p) => p.id !== featuredPost?.id
+    (p) => !featuredIds.has(p.id)
   );
 
   return (
@@ -78,12 +82,12 @@ export default async function HomePage() {
 
       <div className="mx-auto max-w-6xl px-5">
         {/* Featured */}
-        {featuredPost && (
+        {featuredPosts.length > 0 && (
           <section className="mt-14">
             <h2 className="section-label mb-5 text-xs font-bold uppercase tracking-[0.2em] text-faint">
               Featured
             </h2>
-            <PostCard post={featuredPost} large />
+            <FeaturedCarousel posts={featuredPosts} />
           </section>
         )}
 

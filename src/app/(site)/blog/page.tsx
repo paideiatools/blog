@@ -30,6 +30,7 @@ export default async function BlogPage({
     .from("posts")
     .select("*, author:profiles!posts_author_id_fkey(*), category:categories!inner(*)")
     .eq("status", "published")
+    .eq("section", "blog")
     .order("published_at", { ascending: false });
 
   if (category) {
@@ -44,6 +45,7 @@ export default async function BlogPage({
         .from("posts")
         .select("*, author:profiles!posts_author_id_fkey(*), category:categories(*)")
         .eq("status", "published")
+        .eq("section", "blog")
         .order("published_at", { ascending: false });
 
   const activeCategory = (categories as Category[])?.find(

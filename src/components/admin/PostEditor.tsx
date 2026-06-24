@@ -113,6 +113,9 @@ export default function PostEditor({ post }: { post?: Post }) {
     post?.meta_description ?? ""
   );
   const [featured, setFeatured] = useState(post?.featured ?? false);
+  const [section, setSection] = useState<Post["section"]>(
+    post?.section ?? "blog"
+  );
   const [status, setStatus] = useState<Post["status"]>(post?.status ?? "draft");
   const [publishedAt, setPublishedAt] = useState(post?.published_at ?? null);
 
@@ -383,6 +386,7 @@ export default function PostEditor({ post }: { post?: Post }) {
       meta_title: metaTitle.trim() || null,
       meta_description: metaDescription.trim() || null,
       featured,
+      section,
       status: nextStatus,
       published_at: finalPublishedAt,
     };
@@ -734,6 +738,20 @@ export default function PostEditor({ post }: { post?: Post }) {
                     Pinned to the top of the homepage
                   </span>
                 </span>
+              </label>
+
+              <label className="block">
+                <span className="font-semibold">Section</span>
+                <select
+                  value={section}
+                  onChange={(e) => setSection(e.target.value as Post["section"])}
+                  className="mt-1.5 h-11 w-full rounded-xl border border-line bg-paper px-3 outline-none focus:border-accent"
+                >
+                  <option value="blog">Blog post — public, listed on /blog</option>
+                  <option value="docs">
+                    Paideias docs — only under /about, hidden from the blog
+                  </option>
+                </select>
               </label>
 
               <div className="border-t border-line pt-5">

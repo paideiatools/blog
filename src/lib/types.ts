@@ -44,6 +44,7 @@ export type Post = {
   cover_text: string | null;
   cover_layers: CoverLayer[] | null;
   status: "draft" | "published" | "archived";
+  section: "blog" | "docs";
   featured: boolean;
   author_id: string;
   category_id: string | null;

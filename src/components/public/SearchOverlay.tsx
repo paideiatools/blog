@@ -65,6 +65,7 @@ export default function SearchOverlay({
       .from("posts")
       .select("id, title, slug, excerpt, published_at")
       .eq("status", "published")
+      .eq("section", "blog")
       .or(`title.ilike.${term},excerpt.ilike.${term}`)
       .order("published_at", { ascending: false })
       .limit(8);
